@@ -1,0 +1,40 @@
+app.post('/login', (req, res) => {
+  let data = req.body;
+  let user = login(data.username, data.password);
+
+  if (user.role === 'admin') {
+    res.send(generateToken(user, 'admin'));
+  } else if (user.role === 'user') {
+    res.send(generateToken(user, 'user'));
+  } else if (user.role === 'security') {
+    res.send(generateToken(user, 'security'));
+  } else {
+    res.send({ error: "User not found" });
+  }
+});
+
+
+.........................................
+
+function generateToken(userProfile, role) {
+  const payload = {
+    userProfile,
+    role
+  };
+  return jwt.sign(payload, 'access_token', 
+  { expiresIn: 60 * 60 });
+}
+
+function verifyToken(req, res, next) {
+  let header = req.headers.authorization;
+  let token = header.split(' ')[1];
+
+  jwt.verify(token, 'access_token', function (err, decoded) {
+    if (err) {
+      res.send("Invalid Token");
+    } else {
+      req.user = decoded;
+      next();
+    }
+  });
+}
