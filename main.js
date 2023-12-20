@@ -3,6 +3,9 @@ const express = require('express');
 const app = express();
 const port = 5000;
 const jwt = require('jsonwebtoken');
+const swaggerJSDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const basicAuth = require('express-basic-auth');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://alifjr763:QWE12345@cluster30.chmmxsq.mongodb.net/benr2423?retryWrites=true&w=majority";
 const dbName = "benr2423";
@@ -18,6 +21,37 @@ const client = new MongoClient(uri,{
     deprecationErrors:true,
   }
 });
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Information Security',
+      version: '1.0.0',
+      description: 'School Visitor Management',
+    },
+    servers: [
+      {
+        url: 'http://192.168.0.12:5000', 
+        description: 'Visitor Management',
+      },
+    ],
+  },
+  apis: ['./routes/swagger.js'], 
+};
+
+const users = {
+  'aliffkhairul':'BQD8195',
+};
+
+const basicAuthMiddleware = basicAuth({
+  users,
+  challenge: true,
+  unauthorizedResponse: 'Unauthorized Access',
+});
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+app.use('/Group10-docs', basicAuthMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 app.use(express.json());
@@ -457,6 +491,8 @@ function verifyToken(req, res, next) {
     }
   });
 }
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
